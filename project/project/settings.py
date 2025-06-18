@@ -25,8 +25,8 @@ SECRET_KEY = 'django-insecure-#84i(wsopf0u*fn%8oh&3ncj4e9=(v--g^ok!^**^bek9k1&fd
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+ALLOWED_HOSTS = ['djangop-2.onrender.com', 'localhost', '127.0.0.1']
 
-ALLOWED_HOSTS = []
 
 # Custom user model
 AUTH_USER_MODEL = 'entrepreneur.CustomUser'
