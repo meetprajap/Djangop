@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+{% load entrepreneur_tags %}
+{% load humanize %}
+
+{% block title %}Entrepreneur Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #2c3e50, #3498db);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 10px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-icon {
+        font-size: 2rem;
+        color: #3498db;
+        margin-bottom: 1rem;
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .stat-label {
+        color: #666;
+        font-size: 1rem;
+    }
+
+    .company-card {
+        background: white;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .company-header {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 10px 10px 0 0;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .company-body {
+        padding: 1.5rem;
+    }
+
+    .investor-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .investor-item {
+        padding: 1rem;
+        border-bottom: 1px solid #e9ecef;
+        transition: background-color 0.3s ease;
+    }
+
+    .investor-item:last-child {
+        border-bottom: none;
+    }
+
+    .investor-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .progress {
+        height: 1rem;
+        margin: 1rem 0;
+    }
+
+    .equity-label {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .rupee {
+        font-family: 'Arial Unicode MS', Arial;
+        font-weight: normal;
+    }
+
+    .company-info {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+
+    .company-info-label {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .company-info-value {
+        color: #2c3e50;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container">
+            <h1 class="mb-3">Welcome, {{ user.get_full_name }}</h1>
+            <p class="mb-0">Manage your company and track investments</p>
+            <div class="mt-3 d-flex gap-3">
+                <span class="badge bg-success fs-5">
+                    <i class="fas fa-wallet me-2"></i>Available Balance: <span class="rupee">₹</span>{{ user.balance|floatformat:2|intcomma }}
+                </span>
+                <span class="badge bg-primary fs-5">
+                    <i class="fas fa-chart-line me-2"></i>Total Investments: <span class="rupee">₹</span>{{ total_investment|floatformat:2|intcomma }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card text-center">
+                <div class="stat-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="stat-value">
+                    <span class="rupee">₹</span>{{ user.balance|floatformat:2|intcomma }}
+                </div>
+                <div class="stat-label">Available Balance</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card text-center">
+                <div class="stat-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-value">
+                    <span class="rupee">₹</span>{{ total_investment|floatformat:2|intcomma }}
+                </div>
+                <div class="stat-label">Total Investments Received</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card text-center">
+                <div class="stat-icon">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <div class="stat-value">
+                    <span class="rupee">₹</span>{{ total_balance|floatformat:2|intcomma }}
+                </div>
+                <div class="stat-label">Total Balance</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card text-center">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-value">
+                    {{ investments|length }}
+                </div>
+                <div class="stat-label">Total Investors</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Company Details -->
+    <div class="row">
+        <div class="col-12">
+            <div class="company-card">
+                <div class="company-header">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h3 class="mb-0">{{ company.company_name }}</h3>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <span class="badge bg-primary me-2">
+                                <i class="fas fa-chart-pie me-1"></i>
+                                {{ remaining_equity|floatformat:2 }}% Equity Available
+                            </span>
+                            {% if company %}
+                            <a href="{% url 'update_company' company.id %}" class="btn btn-primary">
+                                <i class="fas fa-edit me-1"></i>Update Company Details
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="company-body">
+                    <!-- Company Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="company-info">
+                                <div class="company-info-label">Registration Date</div>
+                                <div class="company-info-value">{{ company.created_at|date:"F d, Y" }}</div>
+                            </div>
+                            <div class="company-info">
+                                <div class="company-info-label">Office Address</div>
+                                <div class="company-info-value">{{ company.office_address }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="company-info">
+                                <div class="company-info-label">Company Valuation</div>
+                                <div class="company-info-value">
+                                    <span class="rupee">₹</span>{{ company.valuation|floatformat:2|intcomma }}
+                                </div>
+                            </div>
+                            <div class="company-info">
+                                <div class="company-info-label">Total Investment Received</div>
+                                <div class="company-info-value">
+                                    <span class="rupee">₹</span>{{ total_investment|floatformat:2|intcomma }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Equity Distribution -->
+                    <h5 class="mb-3">Equity Distribution</h5>
+                    <div class="progress mb-3">
+                        {% with taken_equity=company.company_equity_percentage|sub:remaining_equity %}
+                            <div class="progress-bar bg-success" style="width: {{ taken_equity }}%">
+                                {{ taken_equity }}% Invested
+                            </div>
+                            <div class="progress-bar bg-primary" style="width: {{ remaining_equity }}%">
+                                {{ remaining_equity }}% Available
+                            </div>
+                        {% endwith %}
+                    </div>
+
+                    <!-- Investors List -->
+                    <h5 class="mb-3">Investors</h5>
+                    {% if investments %}
+                        <ul class="investor-list">
+                            {% for investment in investments %}
+                                <li class="investor-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-4">
+                                            <i class="fas fa-user-circle me-2"></i>
+                                            {{ investment.investor.get_full_name }}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <span class="rupee">₹</span>{{ investment.amount|floatformat:2|intcomma }}
+                                        </div>
+                                        <div class="col-md-4">
+                                            {{ investment.equity_percentage|floatformat:2 }}% Equity
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted">No investments yet</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

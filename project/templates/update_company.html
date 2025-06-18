@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Update Company Details</h3>
+                </div>
+                <div class="card-body">
+                    {% if company.government_certificate %}
+                    <div class="alert alert-info mb-4">
+                        <h5>Current Certificate</h5>
+                        <p>You have already uploaded a certificate. You must upload a new one to update your company details.</p>
+                        <a href="{{ company.government_certificate.url }}" target="_blank" class="btn btn-sm btn-info">
+                            <i class="fas fa-file-alt me-1"></i>View Current Certificate
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="form-group mb-3">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <small class="form-text text-muted">{{ field.help_text }}</small>
+                                {% endif %}
+                                {% if field.errors %}
+                                    <div class="alert alert-danger">
+                                        {{ field.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-primary">Update Company</button>
+                        <a href="{% url 'entrepreneur_home' %}" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

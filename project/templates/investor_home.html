@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Investor Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .company-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        padding: 1rem 0;
+    }
+
+    .company-card {
+        flex: 1 1 300px;
+        max-width: 400px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .company-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: var(--secondary-color);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+    }
+
+    .company-card:hover::after {
+        transform: scaleX(1);
+    }
+
+    .company-card:hover {
+        transform: translateY(-10px);
+    }
+
+    .metrics {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #eee;
+    }
+
+    .metric {
+        text-align: center;
+    }
+
+    .metric-value {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    .metric-label {
+        font-size: 0.875rem;
+        color: #666;
+    }
+
+    .company-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .equity-badge {
+        background-color: var(--accent-color);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+    }
+
+    .search-filters {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+
+    .modal-xl {
+        max-width: 90%;
+    }
+
+    .rupee {
+        font-family: 'Arial Unicode MS', Arial;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-4">Welcome, {{ user.get_full_name|default:user.username }}</h2>
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="metric">
+                                <h3 class="metric-value"><span class="rupee">₹</span>{{ user.money|intcomma }}</h3>
+                                <p class="metric-label">Available for Investment</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="metric">
+                                <h3 class="metric-value">{{ companies.count }}</h3>
+                                <p class="metric-label">Available Opportunities</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="metric">
+                                <h3 class="metric-value">0</h3>
+                                <p class="metric-label">Active Investments</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="search-filters mb-4">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="search" class="form-label">Search Companies</label>
+                    <input type="text" id="search" class="form-control" placeholder="Enter company name...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="valuation" class="form-label">Max Valuation</label>
+                    <select class="form-select" id="valuation">
+                        <option value="">All</option>
+                        <option value="10000000">Under ₹1 Cr</option>
+                        <option value="50000000">Under ₹5 Cr</option>
+                        <option value="100000000">Under ₹10 Cr</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="equity" class="form-label">Min Equity Available</label>
+                    <select class="form-select" id="equity">
+                        <option value="">All</option>
+                        <option value="10">10% or more</option>
+                        <option value="20">20% or more</option>
+                        <option value="30">30% or more</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="sort" class="form-label">Sort By</label>
+                    <select class="form-select" id="sort">
+                        <option value="newest">Newest</option>
+                        <option value="valuation">Valuation</option>
+                        <option value="equity">Equity Available</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Company Grid -->
+    <div class="company-grid">
+        {% for company in companies %}
+        <div class="card company-card" onclick="showCompanyDetails({{ company.id }})">
+            <div class="card-body">
+                <div class="company-header">
+                    <h5 class="card-title mb-0">{{ company.company_name }}</h5>
+                    <span class="equity-badge">{{ company.company_equity_percentage }}% Available</span>
+                </div>
+                <p class="card-text text-muted mt-2">{{ company.description|truncatechars:100 }}</p>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-value"><span class="rupee">₹</span>{{ company.valuation|floatformat:0|intcomma }}</div>
+                        <div class="metric-label">Valuation</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value"><span class="rupee">₹</span>{{ company.last_year_revenue|floatformat:0|intcomma }}</div>
+                        <div class="metric-label">Revenue</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value"><span class="rupee">₹</span>{{ company.last_year_profit|floatformat:0|intcomma }}</div>
+                        <div class="metric-label">Profit</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center">
+            <p>No companies available for investment at the moment.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Company Details Modal -->
+<div class="modal fade" id="companyModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Company Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="companyModalBody">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function formatRupees(value) {
+    return '₹' + parseFloat(value).toLocaleString('en-IN', {
+        maximumFractionDigits: 2,
+        minimumFractionDigits: 0
+    });
+}
+
+function showCompanyDetails(companyId) {
+    // Create modal if it doesn't exist
+    let modal = new bootstrap.Modal(document.getElementById('companyModal'));
+    
+    // Fetch company details
+    fetch(`/company/${companyId}/`)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('companyModalBody').innerHTML = html;
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading company details');
+        });
+}
+
+// Search and filter functionality
+document.getElementById('search').addEventListener('input', filterCompanies);
+document.getElementById('valuation').addEventListener('change', filterCompanies);
+document.getElementById('equity').addEventListener('change', filterCompanies);
+document.getElementById('sort').addEventListener('change', filterCompanies);
+
+function filterCompanies() {
+    const search = document.getElementById('search').value.toLowerCase();
+    const maxValuation = document.getElementById('valuation').value;
+    const minEquity = document.getElementById('equity').value;
+    const sort = document.getElementById('sort').value;
+
+    const cards = document.querySelectorAll('.company-card');
+    cards.forEach(card => {
+        const name = card.querySelector('.card-title').textContent.toLowerCase();
+        const valuation = parseFloat(card.querySelector('.metric-value').textContent.replace('₹', '').replace(/,/g, ''));
+        const equity = parseFloat(card.querySelector('.equity-badge').textContent);
+
+        let show = true;
+        if (search && !name.includes(search)) show = false;
+        if (maxValuation && valuation > parseFloat(maxValuation)) show = false;
+        if (minEquity && equity < parseFloat(minEquity)) show = false;
+
+        card.style.display = show ? '' : 'none';
+    });
+}
+</script>
+{% endblock %} 

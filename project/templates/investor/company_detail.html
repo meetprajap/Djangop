@@ -1,0 +1,589 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ company.company_name }} - Company Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Company Overview Styles */
+    .company-header {
+        background: linear-gradient(135deg, #2c3e50, #3498db);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .company-name {
+        font-size: 2.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .company-meta {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    .description {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #444;
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    /* Investment Overview Card */
+    .investment-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .investment-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .investment-card .card-title {
+        color: #2c3e50;
+        font-size: 1.4rem;
+        font-weight: 600;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .metric-row {
+        padding: 1rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .metric-row:last-child {
+        border-bottom: none;
+    }
+
+    .metric-label {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .metric-value {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 1.2rem;
+    }
+
+    /* Financial Charts Section */
+    .chart-section {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .chart-title {
+        color: #2c3e50;
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin-bottom: 2rem;
+    }
+
+    /* Metrics Cards */
+    .metric-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        transition: transform 0.3s ease;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .metric-card h6 {
+        color: #666;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .metric-card .h3 {
+        color: #2c3e50;
+        font-size: 1.8rem;
+        font-weight: 600;
+    }
+
+    /* Investment Form */
+    .investment-form {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-top: 1rem;
+    }
+
+    .form-label {
+        color: #2c3e50;
+        font-weight: 500;
+    }
+
+    .input-group {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+        color: #2c3e50;
+        font-weight: 500;
+    }
+
+    /* Custom Button Styles */
+    .btn-invest {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+        border: none;
+        padding: 0.8rem 2rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-invest:hover {
+        background: linear-gradient(135deg, #2980b9, #2c3e50);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Company Information Section */
+    .info-section {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .info-section h5 {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .info-item {
+        margin-bottom: 1rem;
+    }
+
+    .info-label {
+        color: #666;
+        font-weight: 500;
+        margin-bottom: 0.3rem;
+    }
+
+    .info-value {
+        color: #2c3e50;
+        font-size: 1.1rem;
+    }
+
+    /* Rupee Symbol */
+    .rupee {
+        font-family: 'Arial Unicode MS', Arial;
+        font-weight: normal;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .company-name {
+            font-size: 2rem;
+        }
+
+        .chart-container {
+            height: 250px;
+        }
+
+        .metric-card {
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Company Header -->
+<div class="container mt-4">
+    <div class="company-header">
+        <div class="container">
+            <h1 class="company-name">{{ company.company_name }}</h1>
+            <p class="company-meta">Registered by {{ company.entrepreneur.get_full_name }}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Company Description -->
+        <div class="col-md-8">
+            <div class="description">
+                {{ company.description|linebreaks }}
+            </div>
+
+            <!-- Financial Performance -->
+            <div class="chart-section">
+                <h4 class="chart-title">Financial Performance</h4>
+                <div class="row">
+                    <!-- Revenue & Profit Chart -->
+                    <div class="col-md-8">
+                        <div class="chart-container">
+                            <canvas id="financialChart"></canvas>
+                        </div>
+                    </div>
+                    <!-- Key Metrics -->
+                    <div class="col-md-4">
+                        <div class="metrics-container">
+                            <div class="metric-card mb-3">
+                                <h6>Revenue Growth</h6>
+                                <div class="d-flex align-items-center">
+                                    <div class="h3 mb-0">
+                                        {% if company.revenue_year_1 and company.revenue_year_2 %}
+                                            {{ revenue_growth_1|floatformat:1 }}%
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </div>
+                                    <i class="fas fa-arrow-up text-success ms-2"></i>
+                                </div>
+                                <small class="text-muted">Year over Year</small>
+                            </div>
+                            <div class="metric-card">
+                                <h6>Profit Margin</h6>
+                                <div class="d-flex align-items-center">
+                                    <div class="h3 mb-0">
+                                        {% if company.revenue_year_1 %}
+                                            {{ profit_margin|floatformat:1 }}%
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <small class="text-muted">Last Year</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Charts -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="chart-container">
+                            <canvas id="revenueGrowthChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="chart-container">
+                            <canvas id="profitMarginChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Investment Overview -->
+        <div class="col-md-4">
+            <div class="investment-card">
+                <div class="card-body">
+                    <h5 class="card-title">Investment Overview</h5>
+                    <div class="metric-row">
+                        <span class="metric-label">Valuation</span>
+                        <div class="metric-value">
+                            <span class="rupee">₹</span>{{ company.valuation|floatformat:2|intcomma }}
+                        </div>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Equity Available</span>
+                        <div class="metric-value">{{ remaining_equity|floatformat:2 }}%</div>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Investment Required</span>
+                        <div class="metric-value">
+                            <span class="rupee">₹</span>{{ investment_required|floatformat:2|intcomma }}
+                        </div>
+                    </div>
+                    <div class="investment-form">
+                        <label for="investmentAmount" class="form-label">Investment Amount (₹)</label>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" class="form-control" id="investmentAmount" 
+                                    max="{{ investment_required }}"
+                                   placeholder="Enter amount">
+                        </div>
+                        <small class="text-muted d-block mb-3"> Max: ₹{{ investment_required|floatformat:0|intcomma }}</small>
+                        <button class="btn btn-invest w-100" onclick="makeInvestment({{ company.id }})">
+                            <i class="fas fa-hand-holding-usd me-2"></i>Invest Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Company Information -->
+            <div class="info-section">
+                <h5><i class="fas fa-info-circle me-2"></i>Company Information</h5>
+                <div class="info-item">
+                    <div class="info-label">Office Address</div>
+                    <div class="info-value">{{ company.office_address|linebreaks }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Registration Date</div>
+                    <div class="info-value">{{ company.created_at|date:"F d, Y" }}</div>
+                </div>
+                <div class="mt-3">
+                    <a href="{{ company.government_certificate.url }}" target="_blank" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-file-pdf me-2"></i>View Certificate
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<!-- Add Chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+function formatRupees(value) {
+    return '₹' + parseFloat(value).toLocaleString('en-IN', {
+        maximumFractionDigits: 2,
+        minimumFractionDigits: 0
+    });
+}
+
+// Financial Performance Chart
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        // Revenue & Profit Chart
+        const revenueData = [
+            {{ company.revenue_year_3|default:0 }},
+            {{ company.revenue_year_2|default:0 }},
+            {{ company.revenue_year_1|default:0 }}
+        ];
+        
+        const profitData = [
+            {{ company.profit_year_3|default:0 }},
+            {{ company.profit_year_2|default:0 }},
+            {{ company.profit_year_1|default:0 }}
+        ];
+
+        const ctx = document.getElementById('financialChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['3 Years Ago', '2 Years Ago', 'Last Year'],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: revenueData,
+                        backgroundColor: 'rgba(52, 152, 219, 0.5)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Profit',
+                        data: profitData,
+                        backgroundColor: 'rgba(46, 204, 113, 0.5)',
+                        borderColor: 'rgba(46, 204, 113, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + value.toLocaleString('en-IN');
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += formatRupees(context.raw);
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Revenue Growth Chart
+        const growthData = [
+            0,
+            {{ revenue_growth_2|default:0|floatformat:1 }},
+            {{ revenue_growth_1|default:0|floatformat:1 }}
+        ];
+
+        const growthCtx = document.getElementById('revenueGrowthChart');
+        if (growthCtx) {
+            new Chart(growthCtx, {
+                type: 'line',
+                data: {
+                    labels: ['3 Years Ago', '2 Years Ago', 'Last Year'],
+                    datasets: [{
+                        label: 'Revenue Growth (%)',
+                        data: growthData,
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Profit Margin Chart
+        const marginData = [
+            {{ company.revenue_year_3|default:0 }} > 0 ? ({{ company.profit_year_3|default:0 }} / {{ company.revenue_year_3|default:1 }} * 100).toFixed(1) : 0,
+            {{ company.revenue_year_2|default:0 }} > 0 ? ({{ company.profit_year_2|default:0 }} / {{ company.revenue_year_2|default:1 }} * 100).toFixed(1) : 0,
+            {{ company.revenue_year_1|default:0 }} > 0 ? ({{ company.profit_year_1|default:0 }} / {{ company.revenue_year_1|default:1 }} * 100).toFixed(1) : 0
+        ];
+
+        const marginCtx = document.getElementById('profitMarginChart');
+        if (marginCtx) {
+            new Chart(marginCtx, {
+                type: 'line',
+                data: {
+                    labels: ['3 Years Ago', '2 Years Ago', 'Last Year'],
+                    datasets: [{
+                        label: 'Profit Margin (%)',
+                        data: marginData,
+                        borderColor: 'rgba(46, 204, 113, 1)',
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error initializing charts:', error);
+    }
+});
+
+function makeInvestment(companyId) {
+    const amount = document.getElementById('investmentAmount').value;
+    if (!amount || amount <= 0) {
+        alert('Please enter a valid investment amount');
+        return;
+    }
+
+    const maxAmount = {{ investment_required }};
+    if (amount > maxAmount) {
+        alert('Investment amount cannot exceed ₹' + maxAmount.toLocaleString('en-IN'));
+        return;
+    }
+
+    // Send investment request to server
+    fetch(`/company/${companyId}/invest/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            amount: amount
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Investment successful! You can view this in My Investments.');
+            window.location.href = '/investor/home/';
+        } else {
+            alert(data.error || 'Investment failed. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    });
+}
+
+// Function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %} 

@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>Welcome, {{ user.first_name }} {{ user.last_name }}</h3>
+                    {% if company %}
+                    <a href="{% url 'update_company' company.id %}" class="btn btn-primary">Update Company Details</a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Entrepreneur Dashboard</h5>
+                    <p class="card-text">Your account balance: ${{ user.money }}</p>
+                    
+                    {% if company %}
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Company Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Company Name:</strong> {{ company.company_name }}</p>
+                                    <p><strong>Description:</strong> {{ company.description }}</p>
+                                    <p><strong>Valuation:</strong> ${{ company.valuation }}</p>
+                                    <p><strong>Equity Available:</strong> {{ remaining_equity }}%</p>
+                                    <p><strong>Total Investment Received:</strong> ${{ total_investment }}</p>
+                                    <p><strong>Total Balance:</strong> ${{ total_balance }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Financial Overview</h5>
+                                </div>
+                                <div class="card-body">
+                                    <h6>Last 3 Years Revenue</h6>
+                                    <p>Year 1: ${{ company.revenue_year_1 }}</p>
+                                    <p>Year 2: ${{ company.revenue_year_2 }}</p>
+                                    <p>Year 3: ${{ company.revenue_year_3 }}</p>
+                                    
+                                    <h6 class="mt-3">Last 3 Years Profit</h6>
+                                    <p>Year 1: ${{ company.profit_year_1 }}</p>
+                                    <p>Year 2: ${{ company.profit_year_2 }}</p>
+                                    <p>Year 3: ${{ company.profit_year_3 }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if investments %}
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Recent Investments</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Investor</th>
+                                                    <th>Amount</th>
+                                                    <th>Equity</th>
+                                                    <th>Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for investment in investments %}
+                                                <tr>
+                                                    <td>{{ investment.investor.first_name }} {{ investment.investor.last_name }}</td>
+                                                    <td>${{ investment.amount }}</td>
+                                                    <td>{{ investment.equity_percentage }}%</td>
+                                                    <td>{{ investment.created_at|date:"M d, Y" }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="alert alert-info mt-4">
+                        <h5>No Company Registered</h5>
+                        <p>Please register your company to start receiving investments.</p>
+                        <a href="{% url 'company_registration' %}" class="btn btn-primary">Register Company</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}  

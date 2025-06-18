@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3>{{ company.company_name }}</h3>
+                    <p class="text-muted mb-0">Registered by {{ company.entrepreneur.get_full_name }}</p>
+                </div>
+                <div class="card-body">
+                    <!-- Company Overview -->
+                    <div class="mb-4">
+                        <h5 class="card-title">Company Overview</h5>
+                        <p class="card-text">{{ company.description }}</p>
+                    </div>
+
+                    <!-- Key Metrics -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">Valuation</h6>
+                                    <p class="card-text h4">${{ company.valuation|floatformat:2 }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">Equity Available</h6>
+                                    <p class="card-text h4">{{ company.company_equity_percentage }}%</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">Last Year Revenue</h6>
+                                    <p class="card-text h4">${{ company.last_year_revenue|floatformat:2 }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Financial History -->
+                    <div class="mb-4">
+                        <h5 class="card-title">Financial History</h5>
+                        <div class="row">
+                            <!-- Revenue History -->
+                            <div class="col-md-6">
+                                <h6>Revenue History</h6>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Year</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>3 Years Ago</td>
+                                            <td>${{ company.revenue_year_3|floatformat:2 }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>2 Years Ago</td>
+                                            <td>${{ company.revenue_year_2|floatformat:2 }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Last Year</td>
+                                            <td>${{ company.revenue_year_1|floatformat:2 }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Profit History -->
+                            <div class="col-md-6">
+                                <h6>Profit History</h6>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Year</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>3 Years Ago</td>
+                                            <td>${{ company.profit_year_3|floatformat:2 }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>2 Years Ago</td>
+                                            <td>${{ company.profit_year_2|floatformat:2 }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Last Year</td>
+                                            <td>${{ company.profit_year_1|floatformat:2 }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="mb-4">
+                        <h5 class="card-title">Contact Information</h5>
+                        <p class="card-text"><strong>Office Address:</strong><br>{{ company.office_address|linebreaks }}</p>
+                    </div>
+
+                    <!-- Documents -->
+                    <div class="mb-4">
+                        <h5 class="card-title">Documents</h5>
+                        <p><strong>Government Certificate:</strong> 
+                            <a href="{{ company.government_certificate.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                View Certificate
+                            </a>
+                        </p>
+                    </div>
+
+                    {% if user.user_type == 'investor' %}
+                    <!-- Investment Action (Only visible to investors) -->
+                    <div class="text-center mt-4">
+                        <a href="{% url 'request_investment' company.id %}" class="btn btn-primary btn-lg">
+                            Request Investment
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-muted">
+                    Registered on {{ company.created_at|date:"F d, Y" }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .bg-light {
+        background-color: #f8f9fa;
+    }
+    
+    .table {
+        margin-bottom: 0;
+    }
+    
+    .table th {
+        border-top: none;
+    }
+</style>
+{% endblock %} 

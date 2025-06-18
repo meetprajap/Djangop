@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load investor_tags %}
+{% load humanize %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Divest Investment</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h5>Are you sure you want to divest your investment?</h5>
+                        <p>This action cannot be undone. The return amount will be added to your Investment Wallet's Available Balance.</p>
+                    </div>
+
+                    <div class="investment-details mb-4">
+                        <h5>Investment Details</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Company:</strong> {{ company.company_name }}</p>
+                                <p><strong>Initial Investment:</strong> ₹{{ initial_investment|floatformat:2|intcomma }}</p>
+                                <p><strong>Equity Percentage:</strong> {{ equity_percentage|floatformat:2 }}%</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Current Company Valuation:</strong> ₹{{ current_valuation|floatformat:2|intcomma }}</p>
+                                <p><strong>Return Amount (will be added to Available Balance):</strong> ₹{{ return_amount|floatformat:2|intcomma }}</p>
+                                <p><strong>Profit/Loss:</strong> 
+                                    {% if return_amount > initial_investment %}
+                                        <span class="text-success">+₹{{ return_amount|sub:initial_investment|floatformat:2|intcomma }}</span>
+                                    {% else %}
+                                        <span class="text-danger">-₹{{ initial_investment|sub:return_amount|floatformat:2|intcomma }}</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-exchange-alt me-1"></i>Confirm Divestment
+                        </button>
+                        <a href="{% url 'my_investments' %}" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
